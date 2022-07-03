@@ -47,3 +47,71 @@ Chapter 5
   - `takeEnd`
   - `dropEnd`
   - `unzip`
+
+- Page 223:
+  - A type class creates a Constraint! It's not a type, but restricts the type!
+    ```
+    ghci> :i Show
+    type Show :: * -> Constraint     # type - actually its kind - of the type class Show
+    class Show a where               # Show is a type class
+      show :: a -> String
+
+    ghci> :k Show
+    Show :: * -> Constraint
+    ```
+  - Type classes are used as Constraints!
+    ```
+    getDirections :: ∀ a. (Show a, HasAddress a) => a -> Directions
+    ```
+
+- Page 225:
+  - You can have multiple Constraints in a single Type Signature:  
+    `getDirections :: ∀ a. Show a => HasAddress a => a -> Directions`
+  - You can also define multiple Constraints using Parentheses separating the Typeclasses by commas:  
+    `getDirections :: ∀ a. (Show a, HasAddress a) => a -> Directions`
+  - Tip: Revert to the more verbose signature when type signature spans multiple lines:
+    ```
+    getDirections
+    :: ∀ a
+    . Show a
+    => HasAddress a
+    => a
+    -> Directions
+    ```
+- Page 227:
+  - Every typeclass method must have its polymorphic parameter in its type signature.
+
+- Page 237:
+  - Deriving `Show` instances:
+    ```
+    import Data.Generic.Rep (class Generic)
+    import Data.Show.Generic (genericShow)
+
+    derive instance genericSomeType :: Generic SomeType _
+
+    instance showSomeType :: Show SomeType where
+      show = genericShow
+    ```
+
+- Page 244:
+  - Instance Chaining:
+    ```
+    class IsRecord a where
+      isRecord :: a -> Boolean
+
+    instance isRecordRecord :: IsRecord (Record a) where
+      isRecord _ = true
+    else instance isRecordOther :: IsRecord a where ❶
+      isRecord _ = false
+    ```
+
+- Page 245:
+  - Orphaned Instances
+  - What we need is an authoritative Definition and there really is only two places of authority:
+    - the module where the typeclass is defined and
+    - the module where the type is defined.
+  - We need a way to control either the Typeclass or the Type.
+    - You can use Newtypes for data types you don't control.
+
+- Page 250:
+  - [Fundeps/Functions Dependencies](https://stackoverflow.com/a/20040343/365425)
