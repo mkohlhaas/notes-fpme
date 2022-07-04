@@ -3,40 +3,44 @@ Page 98:
 and maintain the correct order:
 ```
 f1 x y z = x + y z
-f2 x y   = \z -> x y z
-f3 x     = \y z -> x y z
-f4       = \x y z -> x y z
+f2 x y   = \z → x y z
+f3 x     = \y z → x y z
+f4       = \x y z → x y z
 ```
 
 - Remember that Type Signatures are Right-Associative which means they have implied Parentheses on the
-right. This means that the Parentheses on `(a -> c)` are redundant and we can remove them:
+right. This means that the Parentheses on `(a → c)` are redundant and we can remove them:
 ```
-compose :: ∀ a b c. (b -> c) -> (a -> b) -> a -> c
+compose :: ∀ a b c. (b → c) → (a → b) → a → c
 compose f g x = f (g x)
 ```
 
 p. 101
 - This syntax looks odd at first:
 ```
-\person -> person { age = 18 }
+\person → person { age = 18 }
 _ { age = 18 }
 ```
 
 Chapter 5
 - flip apply:
-  - flip: (a' → b' → c') → b' → a' → c'
-  - apply: (a → b) → a → b
+  - flip: `(a' → b' → c') → b' → a' → c'`
+  - apply: `(a → b) → a → b`
   - flip apply:
-    - (a' → b' → c') = (a → b) → a → b
-    - f = (a → b) = a'
-    - a = b'
-    - b = c'
-    - ⇒ (into) flip: (f → a → b) → (a → f → b)
+    - `(a' → b' → c') = (a → b) → a → b`
+    - `f = (a → b) = a'`
+    - `a = b'`
+    - `b = c'`
+    - ⇒ (into) flip: `(f → a → b) → (a → f → b)`
 
 - Page 182: 5.25. Local Function Type Signatures
-  - cp. Haskell's {-# LANGUAGE ScopedTypeVariables #-}
+  - cp. Haskell's `{-# LANGUAGE ScopedTypeVariables #-}`
 
-- Page 184: Natural transformation (e.g. `reverse`)
+- Page 184/305: Natural transformation with `~>` from one functor to another (e.g. `reverse`)
+    ```
+    newtype NonEmptyList a = NonEmptyList (NonEmpty List a)
+    toList :: NonEmptyList ~> List
+    ```
 - Page 190: `filter` filters in - not out!
 - Page 194: Point-free
   - Remember, composition only works with Functions waiting for a single Parameter.
@@ -52,31 +56,31 @@ Chapter 5
   - A type class creates a Constraint! It's not a type, but restricts the type!
     ```
     ghci> :i Show
-    type Show :: * -> Constraint     # type - actually its kind - of the type class Show
-    class Show a where               # Show is a type class
-      show :: a -> String
+    type Show :: * → Constraint     # type - actually its kind - of the type class Show
+    class Show a where              # Show is a type class
+      show :: a → String
 
     ghci> :k Show
-    Show :: * -> Constraint
+    Show :: * → Constraint
     ```
   - Type classes are used as Constraints!
     ```
-    getDirections :: ∀ a. (Show a, HasAddress a) => a -> Directions
+    getDirections :: ∀ a. (Show a, HasAddress a) ⇒ a → Directions
     ```
 
 - Page 225:
   - You can have multiple Constraints in a single Type Signature:  
-    `getDirections :: ∀ a. Show a => HasAddress a => a -> Directions`
+    `getDirections :: ∀ a. Show a ⇒ HasAddress a ⇒ a → Directions`
   - You can also define multiple Constraints using Parentheses separating the Typeclasses by commas:  
-    `getDirections :: ∀ a. (Show a, HasAddress a) => a -> Directions`
+    `getDirections :: ∀ a. (Show a, HasAddress a) ⇒ a → Directions`
   - Tip: Revert to the more verbose signature when type signature spans multiple lines:
     ```
     getDirections
     :: ∀ a
     . Show a
-    => HasAddress a
-    => a
-    -> Directions
+    ⇒ HasAddress a
+    ⇒ a
+    → Directions
     ```
 - Page 227:
   - Every typeclass method must have its polymorphic parameter in its type signature.
@@ -97,7 +101,7 @@ Chapter 5
   - Instance Chaining:
     ```
     class IsRecord a where
-      isRecord :: a -> Boolean
+      isRecord :: a → Boolean
 
     instance isRecordRecord :: IsRecord (Record a) where
       isRecord _ = true
@@ -115,3 +119,20 @@ Chapter 5
 
 - Page 250:
   - [Fundeps/Functions Dependencies](https://stackoverflow.com/a/20040343/365425)
+
+- Page 311:
+  -  Type aliases are nothing more than macros, i.e. you can think of the right-hand side as replacing everywhere the left-hand side is used in your code.
+  ```
+  type Abelian a b = Group a ⇒ Commutative a ⇒ b            -- looks strange
+  find :: ∀ a. Abelian a (Set a → Maybe a)                  -- this is how it's used (looks pleasant)
+  find :: ∀ a. Group a ⇒ Commutative a ⇒ Set a → Maybe a    -- this is what it expands to
+  ```
+
+- Page 317:
+  - This means that the Expression, `\_ → zero`, takes an `a` (which it ignores) and returns a `b`, in this case zero.
+  - This shows that the right-hand zero is `b`'s zero. And so there's no infinite loop here.
+  ```
+  instance Semiring b ⇒ Semiring (a → b) where
+    add f g x = f x + g x    -- RHS: Adding b's
+    zero = const zero        -- the same: zero = \_ → zero
+  ```
