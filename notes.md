@@ -596,5 +596,22 @@ Chapter 5
     ```
 
 - Page 807:
-  - Record is a primitive type and because of that, it's showable as long as each of its fields are showable.
+  - Record is a primitive type and is showable as long as each of its fields are showable.
   - In other words, we don't need to define a `Show` instance if the fields are showable.
+
+- Page 814:
+  ```
+  class Lazy l where
+    defer :: (Unit -> l) -> l
+  ```
+  `(Unit -> l)`: `Unit` acts like a dummy placeholder.
+
+- Page 815:
+  - Another example for `Applicatives`:
+    ```
+    (:) :: a -> Array a -> Array a
+    p :: Parser e a
+    (:) <$> p :: Parser e (Array a -> Array a)
+    many p :: Parser e (Array a)
+    (:) <$> p <*> many p :: Parser e (Array a)
+    ```
