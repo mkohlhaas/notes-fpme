@@ -1,6 +1,6 @@
 Page 98:
 - We can freely move parameters across the equals sign as long as we move the rightmost parameter first and maintain the correct order:
-  ```
+  ```haskell
   f1 x y z = x + y z
   f2 x y   = \z → x y z
   f3 x     = \y z → x y z
@@ -9,14 +9,14 @@ Page 98:
 
 - Remember that type signatures are right-associative which means they have implied parentheses on the right.
 - This means that the parentheses on `(a → c)` are redundant and we can remove them:
-  ```
+  ```haskell
   compose ∷ ∀ a b c. (b → c) → (a → b) → a → c
   compose f g x = f (g x)
   ```
 
 p. 101
 - This syntax looks odd at first:
-  ```
+  ```haskell
   \person → person { age = 18 }
   _ { age = 18 }
   ```
@@ -36,7 +36,7 @@ Chapter 5
   - cp. Haskell's `{-# LANGUAGE ScopedTypeVariables #-}`
 
 - Page 184/305: Natural transformation with `~>` from one functor to another (e.g. `reverse`)
-    ```
+    ```haskell
     newtype NonEmptyList a = NonEmptyList (NonEmpty List a)
     toList ∷ NonEmptyList ~> List
     ```
@@ -54,7 +54,7 @@ Chapter 5
 
 - Page 223:
   - A type class creates a constraint! It's not a type, but restricts the type!
-    ```
+    ```haskell
     ghci> :i Show
     type Show ∷ * → Constraint     # type - actually its kind - of the type class Show
     class Show a where              # Show is a type class
@@ -64,7 +64,7 @@ Chapter 5
     Show ∷ * → Constraint
     ```
   - Type classes are used as Constraints!
-    ```
+    ```haskell
     getDirections ∷ ∀ a. (Show a, HasAddress a) ⇒ a → Directions
     ```
 
@@ -74,7 +74,7 @@ Chapter 5
   - You can also define multiple constraints using parentheses separating the type classes by commas:  
     `getDirections ∷ ∀ a. (Show a, HasAddress a) ⇒ a → Directions`
   - Tip: Revert to the more verbose signature when type signature spans multiple lines:
-    ```
+    ```haskell
     getDirections
     ∷ ∀ a
     . Show a
@@ -87,7 +87,7 @@ Chapter 5
 
 - Page 237:
   - Deriving `Show` instances:
-    ```
+    ```haskell
     import Data.Generic.Rep (class Generic)
     import Data.Show.Generic (genericShow)
 
@@ -99,7 +99,7 @@ Chapter 5
 
 - Page 244:
   - Instance Chaining:
-    ```
+    ```haskell
     class IsRecord a where
       isRecord ∷ a → Boolean
 
@@ -122,7 +122,7 @@ Chapter 5
 
 - Page 311:
   - Type aliases are nothing more than macros, i.e. you can think of the right-hand side as replacing everywhere the left-hand side is used in your code.
-    ```
+    ```haskell
     type Abelian a b = Group a ⇒ Commutative a ⇒ b            -- looks strange
     find ∷ ∀ a. Abelian a (Set a → Maybe a)                  -- this is how it's used (looks pleasant)
     find ∷ ∀ a. Group a ⇒ Commutative a ⇒ Set a → Maybe a    -- this is what it expands to
@@ -131,7 +131,7 @@ Chapter 5
 - Page 317:
   - This means that the expression, `\_ → zero`, takes an `a` (which it ignores) and returns a `b`, in this case zero.
   - This shows that the right-hand zero is `b`'s zero. And so there's no infinite loop here.
-    ```
+    ```haskell
     instance Semiring b ⇒ Semiring (a → b) where
       add f g x = f x + g x    -- RHS: Adding b's
       zero = const zero        -- the same: zero = \_ → zero
@@ -165,7 +165,7 @@ Chapter 5
 
 - Page 394:
   -  So while the function is called `map`, many times we say `map over`, e.g. we `map f over a list`.
-     ```
+     ```haskell
      class Functor f where
        map ∷ ∀ a b. (a → b) → f a → f b
      ```
@@ -178,13 +178,13 @@ Chapter 5
 
 - Page 437:
   - Explanation why this does **NOT** compile!
-    ```
+    ```haskell
     instance functorEither ∷ Functor (Either a) where
       map f (Right x) = Right $ f x
       map _ left = left
     ```
   - But this does!
-    ```
+    ```haskell
     instance functorEither ∷ Functor (Either a) where
       map _ (Left err) = Left err
       map f (Right x) = Right $ f x
@@ -196,7 +196,7 @@ Chapter 5
 
 - Page 461:
   - Examples for function composition with covariant and contravariant functions!
-    ```
+    ```haskell
     a → Int → Int    -- contravariant (- polarity  -)
     Int → Int → a    -- covariant     (+ polarity ++)
     (a → Int) → Int  -- covariant     (+ polarity --)
@@ -207,7 +207,7 @@ Chapter 5
 
 - Page 482:
   - Creating a type operator:
-    ```
+    ```haskell
     infixr 6 type Tuple as &
     tup ∷ ∀ a b. a → b → a & b
     tup x y = Tuple x y
@@ -218,26 +218,26 @@ Chapter 5
 
 - Page 483:
   - Function functor is just function composition:
-    ```
+    ```haskell
     instance functorFn ∷ Functor ((→) r) where
       map f g = f <<< g  -- map = (<<<) ⇒ map = compose
     ```
 
 - Page 486:
   - Profunctor: contravariant in the first Parameter (maps INPUTS), covariant in the second (maps OUTPUTS)
-    ```
+    ```haskell
     class Profunctor p where
       dimap ∷ ∀ a b c d. (b → a) → (c → d) → p a c → p b d
     ```
   - Profunctor for functions:
     - first map input, then apply original function, then map output
-    ```
+    ```haskell
     instance profunctorFn ∷ Profunctor (→) where
       dimap ∷ ∀ a b c d. (b → a) → (c → d) → (a → c) → (b → d)
       dimap f g h = g <<< h <<< f
     ```
     - Profunctor laws:
-    ```
+    ```haskell
     dimap identity identity = identity
     dimap (f1 <<< g1) (g2 <<< f2) = dimap g1 g2 <<< dimap f1 f2
     ```
@@ -245,7 +245,7 @@ Chapter 5
 
 - Page 529:
   - Difference between PureScript and Haskell:
-    ```
+    ```haskell
     class Functor f ⇒ Applicative f where
       pure ∷ a → f a
       (<*>) ∷ f (a → b) → f a → f b
@@ -256,7 +256,7 @@ Chapter 5
 
 - Page 535:
   - We can write `apply` in terms of map, and we can write `map` in terms of `apply`.
-    ```
+    ```haskell
     pure f <*> x = f <$> x
     ```
   - But don't do both at the same time ⇒ infinite loop
@@ -272,7 +272,7 @@ Chapter 5
   - Validation with Applicatives:
   - We can map `fullName` over `Either String String` since the second parameter of `Either String String` is `String`!
 
-    ```
+    ```haskell
     -- original pure function
     fullName ∷ String → String → String → String
     fullName first middle last = first <> " " <> middle <> " " <> last
@@ -296,13 +296,13 @@ Chapter 5
 
 - Page 551:
   - Type class `Traversable`
-    ```
+    ```haskell
     class (Functor t, Foldable t) <= Traversable t where
       traverse ∷ ∀ a b m. Applicative m => (a → m b) → t a → m (t b)
       sequence ∷ ∀ a m. Applicative m => t (m a) → m (t a)
     ```
   - Example:
-    ```
+    ```haskell
     type ProductId = Int
 
     -- get product from an SQL database
@@ -315,12 +315,12 @@ Chapter 5
     getAllSubproducts = traverse getProduct
     ```
   - `traverse` transforms functions:
-    ```
+    ```haskell
      ProductId  → Maybe  Product  ⇒
     [ProductId] → Maybe [Product]
     ```
   - `sequence` swaps outer and inner:
-    ```
+    ```haskell
     [Maybe Product] ⇒ Maybe [Product]
 
     List  (Maybe Product) ⇒
@@ -331,18 +331,18 @@ Chapter 5
 - Page 569:
   - Different ways to create a `Functor` instance. Using `Either a b` as an example:
     - Explicit implementation:
-      ```
+      ```haskell
       instance Functor (Either a) where
         map _ (Left a) = Left a
         map f (Right b) = Right $ f b
       ```
     - Using [`liftA1`](https://pursuit.purescript.org/packages/purescript-prelude/6.0.0/docs/Control.Applicative#v:liftA1):
-      ```
+      ```haskell
       instance Functor (Either a) where
         map = liftA1
       ```
     - Derive instance:
-      ```
+      ```haskell
       derive instance Functor (Either a)
       ```
 
@@ -353,19 +353,19 @@ Chapter 5
 
 - Page 582:
   - Defining Row Types:
-    ```
+    ```haskell
     type FamilyAgesRow r = (fatherAge ∷ Age, motherAge ∷ Age | r)
     type FamilyNamesRow r = (fatherName ∷ String, motherName ∷ String | r)
     ```
     Note the parentheses! (No brackets or the like.)
   - Using/extending `Row Types` in `Extensible Records`:
-    ```
+    ```haskell
     newtype FamilyAges = FamilyAges { | FamilyAgesRow () }
     newtype Family     = Family     { | FamilyAgesRow (FamilyNamesRow ()) }
     ```
     () = empty row ⇒ this is the `r` in the Row Type
   - This is syntactic sugar for:
-    ```
+    ```haskell
     newtype Family     = Family     { Record (FamilyAgesRow (FamilyNamesRow ())) }
     ```
   - See also [Records in PureScript](https://github.com/purescript/documentation/blob/master/language/Records.md)
@@ -376,7 +376,7 @@ Chapter 5
 - Page 655:
   - `composeKleisli` is for monads what `composeFlipped` is for functions.
   - Note the `≡`; this is not actual code!
-    ```
+    ```haskell
     composeFlipped ∷ ∀ a b c.              (a →   b) → (b →   c) → (a →   c)
     composeFlipped f g ≡ f >>> g
 
@@ -388,9 +388,9 @@ Chapter 5
     infixr 1 composeKleisli as >=>
     ```
   - These are the actual implementations:
-    ```
-    composeFlipped f g a ≡ g   <<< f a  -- composeFlipped in terms of compose
-    composeKleisli f g a ≡ f a >>= g    -- composeKleisli in terms of bind
+    ```haskell
+    composeFlipped f g a = g   <<< f a  -- composeFlipped in terms of compose
+    composeKleisli f g a = f a >>= g    -- composeKleisli in terms of bind
     ```
 
   - `>=>` is the famous `fish operator`!
@@ -414,11 +414,11 @@ Chapter 5
 - Page 662:
   - Haskell's and PureScript's Monad Implementation
   - Class hierarchy Haskell:
-    ```
+    ```haskell
     Functor (fmap) ⇒ Applicative (pure, `<*>`) ⇒ Monad (`>>=`)
     ```
   - Class hierarchy PureScript:
-    ```
+    ```haskell
                                     Applicative (pure)
     Functor (map) ⇒ Apply (apply) ⇒                    ⇒ Monad (no methods)
                                     Bind (bind)
@@ -429,20 +429,20 @@ Chapter 5
 
 - Page 663:
   - Monad Laws:
-    ```
+    ```haskell
     pure >=> g = g                      [Left Identity]
     f >=> pure = f                      [Right Identity]
     (f >=> g) >=> h = f >=> (g >=> h)   [Associativity]
     ```
   - `pure` acts like `identity` for Kleisli Composition:
-    ```
+    ```haskell
     identity >>> g = g                  [Left Identity]
     f >>> identity = f                  [Right Identity]
     (f >>> g) >>> h = f >>> (g >>> h)   [Associativity]
     ```
 - Page 685:
   - Writing `apply` in terms of `bind` with helper `ap`:
-    ```
+    ```haskell
     ap :: ∀ a b m. Monad m => m (a -> b) -> m a -> m b
     ap mf mx = do
       f <- mf
@@ -450,7 +450,7 @@ Chapter 5
       pure $ f x
     ```
   - e.g. for `Maybe`:
-    ```
+    ```haskell
     instance Apply Maybe where
     apply = ap
     ```
@@ -476,7 +476,7 @@ Chapter 5
 
 - Page 696:
   - Writer API:
-    ```
+    ```haskell
     tell :: ∀ w. w -> Writer w Unit
     listen :: ∀ a w. Writer w a -> Writer w (Tuple a w)
     pass :: ∀ a w. Writer w (Tuple a (w -> w)) -> Writer w a
@@ -511,12 +511,12 @@ Chapter 5
 - Page 709:
   - Beware of hidden infinite loops!
   - Think of using a helper function when dealing with function values in monads, e.g.
-    ```
+    ```haskell
     -- Applicative Parser (p. 618)
     parse :: ∀ e a. Parser e a -> ParseFunction e a
     parse (Parser f) = f
     ```
-    ```
+    ```haskell
     -- Reader Monad
     runReader :: forall r a. Reader r a -> r -> a
     runReader (Reader f) = f
@@ -524,7 +524,7 @@ Chapter 5
 
 - Page 712:
   - Reader API:
-    ```
+    ```haskell
     ask :: ∀ r. Reader r r
     asks :: ∀ a r. (r -> a) -> Reader r a
     ```
@@ -551,7 +551,7 @@ Chapter 5
 
 - Page 722:
   - State API:
-    ```
+    ```haskell
     get :: ∀ s. State s s
     put :: ∀ s. s -> State s Unit
     modify :: ∀ s. (s -> s) -> State s s
@@ -569,7 +569,7 @@ Chapter 5
 
 - Page 751:
   - We need **double mapping** because we have a `Tuple` inside of an `Either`. We are making **two** hops.
-    ```
+    ```haskell
     type ParserState a = Tuple String a -- left-over string and parsed value
     type ParseFunction e a = ParserError e => String -> Either e (ParserState a)
     map f p = Parser \s -> map f <$> parse p s  -- two maps
@@ -578,7 +578,7 @@ Chapter 5
 - Page 760:
   - Once again, `bind` is doing all kinds of things in the background for us.
   - In the case of `Parser`, it's passing the strings and it's calling `parse`. Even though it cannot be see from the code in `ap`:
-    ```
+    ```haskell
     ap :: ∀ a b m. Monad m => m (a -> b) -> m a -> m b
     ap ff fx = do
       f <- ff  -- the parse is in the bind
@@ -591,7 +591,7 @@ Chapter 5
 
 - Page 798:
   - Remember, `←` extracts the `a` in the monad, which for `Parser` is the second type parameter. In this case it is a `String`.
-    ```
+    ```haskell
     count' 4 digit :: Parser e String
     ```
 
@@ -600,7 +600,7 @@ Chapter 5
   - In other words, we don't need to define a `Show` instance if the fields are showable.
 
 - Page 814:
-  ```
+  ```haskell
   class Lazy l where
     defer :: (Unit -> l) -> l
   ```
@@ -608,10 +608,231 @@ Chapter 5
 
 - Page 815:
   - Another example for `Applicatives`:
-    ```
+    ```haskell
     (:) :: a -> Array a -> Array a
     p :: Parser e a
     (:) <$> p :: Parser e (Array a -> Array a)
     many p :: Parser e (Array a)
     (:) <$> p <*> many p :: Parser e (Array a)
+    ```
+- Page 855+: **Monad Transformers & Monad Stacks**
+  - Monads do not compose ⇒ We need Monad Transformers!
+
+  - Monad Transformers are Monads that transform other Monads.
+  - They do this by taking monadic values from other monads and then transforming them to themselves by lifting them into their own context.
+  - When they are run, they simply return the original monadic value.
+
+  - Common Monad Transformers
+    - Identity
+      ```haskell
+      newtype Identity    a = Identity     a
+      newtype IdentityT m a = IdentityT (m a)
+      ```
+    - Writer
+      ```haskell
+      newtype Writer  w   a = Writer     (Tuple a w)
+      newtype WriterT w m a = WriterT (m (Tuple a w))
+      type Writer     w     = WriterT w Identity
+      ```
+    - Reader
+      ```haskell
+      newtype Reader  r   a = Reader  (r →   a)
+      newtype ReaderT r m a = ReaderT (r → m a)
+      type Reader     r     = ReaderT r Identity
+      ```
+    - State
+      ```haskell
+      newtype State  s   a = State  (s →    Tuple a s)
+      newtype StateT s m a = StateT (s → m (Tuple a s))
+      type State     s     = StateT s Identity
+      ```
+    - Either
+      ```haskell
+      data Either     e   a = Left e | Right a
+      newtype ExceptT e m a = ExceptT (m (Either e a))
+      type Except     e     = ExceptT e Identity
+      ```
+
+  - Monad Transformer Runners:
+    ```haskell
+    runIdentityT ∷ ∀ m   a. IdentityT   m a -> m a
+    runWriterT   ∷ ∀ w m a. WriterT   w m a -> m (Tuple a w)
+    runReaderT   ∷ ∀ r m a. ReaderT   r m a -> (r -> m a)
+    runStateT    ∷ ∀ s m a. StateT    s m a -> s -> m (Tuple a s)
+    runExceptT   ∷ ∀ e m a. ExceptT   e m a -> m (Either e a)
+    ```
+
+  - Type class `MonadTrans` represents monads that can transform other monads.
+    ```haskell
+    class MonadTrans t where
+      lift :: ∀ m a. Monad m => m a -> t m a
+    ```
+    `lift` will take a value `a` in a context `m` and lift it into itself `t m a`.
+
+  - The general form of a monad transformer is `t m a`.
+    - `t` is the monad transformer, `m` is the underlying Monad and `a` is the pure value.
+
+  - `t` could be e.g.
+    - `WriterT w`
+    - `ReaderT r`
+    - `SrateT s`
+    - `ExceptT e`
+
+  - Monad Transformers are themselves Monads! ⇒ We can stack them!
+
+    | Monad Transformer | Its Monad   |
+    |-------------------|-------------|
+    | WriterT           | WriterT w m |
+    | ReaderT           | ReaderT r m |
+    | StateT            | StateT s m  |
+    | ExceptT           | ExceptT e m |
+
+  - Two Examples of Monad Stacks:
+
+    ```
+    1.) ExceptT e (WriterT w (StateT s Identity)) a
+    ```
+    ![Monad Stack](monad_stack_1.png)
+
+    ```haskell
+    runExceptT ⇒ m (Either e a) ⇒ (Either e a) is the a for the next runner
+    runWriterT ⇒ m (Tuple (Either e a) w) ⇒ (Tuple (Either e a) w) is the a for the next runner
+    runStateT ⇒ m (Tuple (Tuple (Either e a) w) s)
+    unwrap ⇒ Tuple (Tuple (Either e a) w) s
+    ```
+
+    If we have an error we'll get something like: `Tuple (Tuple (Left "error") w) s` ⇒ we have `error`, `log w`, `state s`
+
+    ```
+    2.) WriterT w (StateT s (ExceptT e Identity)) a
+    ```
+    ![Monad Stack](monad_stack_2.png)
+    ```haskell
+    runWriterT ⇒ m (Tuple a w)
+    runStateT ⇒ m (Tuple (Tuple a w) s)
+    runExceptT ⇒ m (Either e (Tuple (Tuple a w) s))
+    unwrap ⇒  Either e (Tuple (Tuple a w) s)
+    ```
+
+    If we have an error we'll get something like: `Left "error"` ⇒ we have `error`, but `log w`, `state s` are lost!
+
+    - Monad stack order matters: put `ExceptT` at top of the stack!
+
+  - Monad Transformers implement the API functions for Writer (tell), Reader (ask), State (get, put), ...
+    - If the monad transformer implements the function, e.g. `tell` for `WriterT`, it will simply execute it.
+    - If the monad transformer does not implement the function, e.g. `ask` for `WriterT`, it will delegate it to the next layer in the stack.
+
+  - There are different type classes to support this functionality, e.g.:
+    - `MonadTell` → `tell`
+    - `MonadAsk` → `ask`
+    - `MonadState` → `state`
+    - `MonadThrow` → `throwError`
+    - `MonadError` → `catchError`
+
+  - Typical typeclass methods are written in terms of these type class methods, e.g.:
+    - `asks` uses `MonadAsk`
+    - `get` uses `MonadState`
+    - `put` uses `MonadState`
+    - `modify` uses `MonadState`
+    - `modify_` uses `MonadState`
+
+  - Type holes:
+    - PureScript (works only when there are no compilation errors): `?x`, `?y`, `?asdf`, ...
+      - If you need something that always compiles use `undefined`:
+        ```haskell
+        undefined :: ∀ a. a
+        ```
+        Since it returns an `a`, it will unify with **any** type the compiler is looking for ⇒ we make the compiler happy!
+    - Haskell: `_`
+      - `undefined` is already in the `Prelude`.
+
+  - Make use of type aliases and custom runners, e.g.:
+    ```haskell
+    type AppM e w s a = ExceptT e (WriterT w (StateT s Identity)) a
+    runApp :: Int -> AppM String String Int Unit -> ?x  -- let the compiler infer the complicated result type and create a type alias for it
+    runApp s = flip runStateT s <<< runWriterT <<< runExceptT
+    ```
+
+- Page 881:
+  - You could also use a record type (`AppEffects`) to collect all results and write a helper function (`results`) to convert between result types.
+
+    ![Results helper](results_helper.png)
+
+- Page 895:
+  - In PureScript, there is no need to add a `$` before the `do` keyword.
+  - However, this is not the case in Haskell without the use of a language extension called `BlockArguments`.
+
+- Page 917:
+  - When we implement methods that are outside of our responsibility, e.g. writing to the log in `ReaderT`, we can simply lift our underlying monad's implementation.
+
+- Sections 20.7 and 20.8 could be good exercises!
+
+- Page 922:
+  - We have basically two options to work with `m a` in a generic way:
+    - `map f` is to get **into** the `m` and apply the pure function `f ∷ a → b` to `a` creating an `m b`.
+    - `bind`/`>>= f` is to **pull out** the `a` of the `m` and apply the monadic function `f ∷ a → m b` to `a` creating an `m b`.
+
+- Page 929:
+  - Example for `undefined` and type holes:
+    ```haskell
+    import Undefined (undefined)
+
+    instance applyStateT :: Functor m => Apply (StateT s m) where
+      apply (StateT fmf) (StateT fmx) = StateT \s ->
+      let x = (fmf s <#> \(Tuple f s') -> fmx s <#> \(Tuple x s'') -> Tuple (f x) s'') :: ?x  -- our type hole
+      in undefined
+    ```
+
+- Page 953:
+  - Example for throwing and catching errors:
+
+    ![Throw & catch error](throw_catch_error.png)
+
+- Page 968:
+  - If you don't know what a function returns, then just put a type hole for the time being and write the rest of the function.
+  - `_` in type definitions instead of `?_` ??? (page 1229: using _ means that the compiler will figure out what it is and it won’t give us a compiler warning.)
+
+- Page 971:
+  Implementation of catchError:  
+  ![catchError](catch_error_impl.png)
+
+  - Take a look at the above code and pay particular attention to the State, s.
+  - Notice that it’s used in 2 places.
+  - It’s first passed to fmx. That Function is the function that catchError is going to TRY to evaluate and if and only if there’s an error, it’ll call the error handler, i.e. the Lambda.
+  - Now, look carefully at the Lambda, especially where s is passed to runStateT. Notice how it’s the SAME s we passed to the code that had an error, i.e. fmx.
+  - But what if fmx changed the State? Don’t we want these changes?
+  - We either always want the changes or we never want them. The problem is that we’re going to get the changes if and only if there is no error. If there is an error, any State changes will be lost.
+
+- Page 973:
+
+  ![Catch Error](catch_error.png)
+
+- Page 974:
+  - For debugging purposes you can use `spy` for outputting to the console:
+    ```haskell
+    spy :: ∀ a. DebugWarning => String -> a -> a
+    ```
+    For example:
+    ```haskell
+    add :: Int -> Int -> Int
+    add x y = (spy "X" x) + (spy "Y" y)
+    ```
+    or in monadic code:
+    ```haskell
+    app :: AppM
+    app = do
+      s <- get
+      pure $ spy "Our state" s  -- this way
+      let x = spy "Our state" s -- or this way
+      pure unit
+    ```
+
+- Reread 21.5.
+
+- Page 1510:
+  - Technique for sussing the type signature by feeding the compiler one thing at a time.
+  - We'll react to the errors and follow it, hopefully, to a pretty general type signature.
+    ```haskell
+    liftExcept :: ∀ x y. x -> y
+    liftExcept ma = ma # lift >>= liftEither
     ```
