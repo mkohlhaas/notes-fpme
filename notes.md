@@ -796,6 +796,10 @@ Chapter 5
   Implementation of catchError:  
   ![catchError](catch_error_impl.png)
 
+  - [throwError and catchError of ExceptT](https://github.com/purescript/purescript-transformers/blob/v6.0.0/src/Control/Monad/Except/Trans.purs#L109)
+    - `ExceptT` is where the actual action happens. All other monad transformers just pass their `throwError` and `catchError`s to it.
+    - `throwError` of ExceptT simply wraps it in a `Left`.
+    - `catchError` executes the error handler only if it finds a `Left`.
   - Take a look at the above code and pay particular attention to the State, s.
   - Notice that it’s used in 2 places.
   - It’s first passed to fmx. That Function is the function that catchError is going to TRY to evaluate and if and only if there’s an error, it’ll call the error handler, i.e. the Lambda.
