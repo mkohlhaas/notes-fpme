@@ -1,10 +1,10 @@
 Page 98:
 - We can freely move parameters across the equals sign as long as we move the rightmost parameter first and maintain the correct order:
   ```haskell
-  f1 x y z = x + y z
-  f2 x y   = \z → x y z
-  f3 x     = \y z → x y z
-  f4       = \x y z → x y z
+  f1 x y z = x + y + z
+  f2 x y   = \z → x + y + z
+  f3 x     = \y z → x + y + z
+  f4       = \x y z → x + y + z
   ```
 
 - Remember that type signatures are right-associative which means they have implied parentheses on the right.
@@ -657,7 +657,7 @@ Chapter 5
     ```haskell
     runIdentityT ∷ ∀ m   a. IdentityT   m a -> m a
     runWriterT   ∷ ∀ w m a. WriterT   w m a -> m (Tuple a w)
-    runReaderT   ∷ ∀ r m a. ReaderT   r m a -> (r -> m a)
+    runReaderT   ∷ ∀ r m a. ReaderT   r m a -> r -> m a
     runStateT    ∷ ∀ s m a. StateT    s m a -> s -> m (Tuple a s)
     runExceptT   ∷ ∀ e m a. ExceptT   e m a -> m (Either e a)
     ```
